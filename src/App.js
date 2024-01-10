@@ -1,35 +1,98 @@
 import Navigation from "./components/Navigation/Navigation";
 import ImageLinkForm from "./components/ImageLinkForm/ImageLinkForm";
 import Rank from "./components/Rank/Rank";
-import ParticlesBg from "particles-bg";
 import styled from "styled-components";
+import FaceRecognition from "./components/FaceRecognition/FaceRecognition";
 import { useState } from "react";
 
 const Main = styled.main`
   height: 100%;
-  width: 100%;
-  
+  width: 100vw;
+  background-image: linear-gradient(to top, #30cfd0 0%, #330867 100%);
 `;
+
 function App() {
   const [input, setInput] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [box, setBox] = useState({});
 
+  const PAT = "7f8e2cc51dd947f695c5b7c9fe72e725";
+  const USER_ID = "yamna";
+  const APP_ID = "face-recognition";
+  const MODEL_ID = "face-detection";
+  const IMAGE_URL = input;
+
+
+  const raw = JSON.stringify({
+    user_app_id: {
+      user_id: USER_ID,
+      app_id: APP_ID,
+    },
+    inputs: [
+      {
+        data: {
+          image: {
+            url: IMAGE_URL,
+          },
+        },
+      },
+    ],
+  });
+
+  const requestOptions = {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      Authorization: "Key " + PAT,
+    },
+    body: raw,
+  };
+
+  const calculateFaceLocation = (data) => {
+    const clarifaiFace = data.outputs[0].data.regions[0].region_info.bounding_box;
+    console.log(clarifaiFace)
+    const image = document.querySelector("#inputImage");
+    const width = Number(image.width);
+    const height = Number(image.height);
+    return {
+      leftCol: clarifaiFace.left_col * width,
+      topRow: clarifaiFace.top_row * height,
+      rightCol: width - (clarifaiFace.right_col * width),
+      bottomRow: height - (clarifaiFace.bottom_row * height),
+    }
+  }
+  const displayFaceBox = (box) => {
+    console.log(box);
+    setBox(box);
+  }
   const onInputChange = (event) => {
     setInput(event.target.value);
   }
+  
   const onBtnSubmit = () => {
-    console.log("click");
+    setImageUrl(input);
+    fetch(
+      `https://api.clarifai.com/v2/models/${MODEL_ID}/outputs`,
+      requestOptions
+    )
+      .then((response) => response.json())
+      .then((result) => {
+        displayFaceBox(calculateFaceLocation(result));
+        }
+      )
+      .catch((error) => console.log("error", error));
   }
 
   return (
-    <Main className="App">
-      <ParticlesBg color="#1904E5" type="circle" bg={true} />
-      <Navigation />
-      <Rank />
-      <ImageLinkForm onInputChange={onInputChange} onBtnSubmit={onBtnSubmit}/>
-      {/*
-      
-      <FaceRecognition/>*/}
-    </Main>
+      <Main className="App">
+        <Navigation />
+        <Rank />
+        <ImageLinkForm
+          onInputChange={onInputChange}
+          onBtnSubmit={onBtnSubmit}
+        />
+        <FaceRecognition imageUrl={imageUrl} alt="" box={box} />
+      </Main>
   );
 }
 

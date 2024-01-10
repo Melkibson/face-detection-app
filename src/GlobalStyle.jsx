@@ -10,8 +10,8 @@ export const GlobalStyle = createGlobalStyle`
     body {
         margin: 0;
         padding: 0;
+        overflow-x: hidden;
         font-family: 'Coolvetica', serif;
-        background-image: linear-gradient(to right, #434343 0%, black 100%);
         color: white;
         
     }
