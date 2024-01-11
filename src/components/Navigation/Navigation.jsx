@@ -23,11 +23,15 @@ const Span = styled.span`
   }
 `;
 
-export default function Navigation() {
+export default function Navigation({onRouteChange, isSignedIn}) {
   return (
     <Nav>
       <Logo />
-      <Span>Sign Out</Span>
+      {
+      isSignedIn ? 
+      <Span onClick={onRouteChange}>Sign Out</Span>
+      : ''
+        }
     </Nav>
   );
 }

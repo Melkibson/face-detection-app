@@ -1,12 +1,14 @@
+import { useState } from "react";
 import Navigation from "./components/Navigation/Navigation";
 import ImageLinkForm from "./components/ImageLinkForm/ImageLinkForm";
 import Rank from "./components/Rank/Rank";
 import styled from "styled-components";
 import FaceRecognition from "./components/FaceRecognition/FaceRecognition";
-import { useState } from "react";
+import SignIn from "./components/Form/SignIn";
+import Register from "./components/Form/Register";
 
 const Main = styled.main`
-  height: 100%;
+  min-height: 100vh;
   width: 100vw;
   background-image: linear-gradient(to top, #30cfd0 0%, #330867 100%);
 `;
@@ -15,13 +17,14 @@ function App() {
   const [input, setInput] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [box, setBox] = useState({});
+  const [route, setRoute] = useState("signin");
+  const [isSignedIn, setIsSignedIn] = useState(false);
 
   const PAT = "7f8e2cc51dd947f695c5b7c9fe72e725";
   const USER_ID = "yamna";
   const APP_ID = "face-recognition";
   const MODEL_ID = "face-detection";
   const IMAGE_URL = input;
-
 
   const raw = JSON.stringify({
     user_app_id: {
@@ -49,26 +52,27 @@ function App() {
   };
 
   const calculateFaceLocation = (data) => {
-    const clarifaiFace = data.outputs[0].data.regions[0].region_info.bounding_box;
-    console.log(clarifaiFace)
+    const clarifaiFace =
+      data.outputs[0].data.regions[0].region_info.bounding_box;
+    console.log(clarifaiFace);
     const image = document.querySelector("#inputImage");
     const width = Number(image.width);
     const height = Number(image.height);
     return {
       leftCol: clarifaiFace.left_col * width,
       topRow: clarifaiFace.top_row * height,
-      rightCol: width - (clarifaiFace.right_col * width),
-      bottomRow: height - (clarifaiFace.bottom_row * height),
-    }
-  }
+      rightCol: width - clarifaiFace.right_col * width,
+      bottomRow: height - clarifaiFace.bottom_row * height,
+    };
+  };
   const displayFaceBox = (box) => {
     console.log(box);
     setBox(box);
-  }
+  };
   const onInputChange = (event) => {
     setInput(event.target.value);
-  }
-  
+  };
+
   const onBtnSubmit = () => {
     setImageUrl(input);
     fetch(
@@ -78,21 +82,40 @@ function App() {
       .then((response) => response.json())
       .then((result) => {
         displayFaceBox(calculateFaceLocation(result));
-        }
-      )
+      })
       .catch((error) => console.log("error", error));
+  };
+
+  const onRouteChange = (route) => {
+    if (route === "signin") {
+      setIsSignedIn(false);
+    } else if (route === "home") {
+      setIsSignedIn(true);
+    }
+    setRoute(route);
   }
 
   return (
-      <Main className="App">
-        <Navigation />
-        <Rank />
-        <ImageLinkForm
-          onInputChange={onInputChange}
-          onBtnSubmit={onBtnSubmit}
-        />
-        <FaceRecognition imageUrl={imageUrl} alt="" box={box} />
-      </Main>
+    <Main className="App">
+      <Navigation isSignedIn={isSignedIn} onRouteChange={() => onRouteChange("signin")} />
+      {route === "home" ? (
+        <>
+          <Rank />
+          <ImageLinkForm
+            onInputChange={onInputChange}
+            onBtnSubmit={onBtnSubmit}
+          />
+          <FaceRecognition imageUrl={imageUrl} alt="" box={box} />
+        </>
+      ) : (
+        route === "signin" ? 
+        <SignIn
+          onRouteChange={onRouteChange}
+        /> : <Register onRouteChange={onRouteChange}/>
+      )
+      
+      }
+    </Main>
   );
 }
 

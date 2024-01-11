@@ -6,6 +6,10 @@ export const GlobalStyle = createGlobalStyle`
         font-family: Coolvetica;
         src:url("/fonts/coolvetica/coolvetica.otf") format("opentype");
     }
+    @font-face {
+        font-family: CoolveticaRg;
+        src:url("/fonts/coolvetica/coolveticaRg.otf") format("opentype");
+    }
 
     body {
         margin: 0;
@@ -14,6 +18,9 @@ export const GlobalStyle = createGlobalStyle`
         font-family: 'Coolvetica', serif;
         color: white;
         
+    }
+    input[type="checkbox"] {
+        margin:0 0.5rem 0 0;
     }
 `;
 
