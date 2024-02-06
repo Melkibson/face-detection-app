@@ -24,11 +24,11 @@ const UserRank = styled.div`
   font-size: 3rem;
 `;
 
-export default function Rank() {
+export default function Rank({ name, entries}) {
   return (
     <Container>
-      <UserHeading>Yamna your current rank is ...</UserHeading>
-      <UserRank>#5</UserRank>  
+      <UserHeading>{`${name} your current rank is ...`} </UserHeading>
+      <UserRank>#{entries}</UserRank>  
     </Container>
   )
 }

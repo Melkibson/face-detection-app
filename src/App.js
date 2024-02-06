@@ -19,6 +19,25 @@ function App() {
   const [box, setBox] = useState({});
   const [route, setRoute] = useState("signin");
   const [isSignedIn, setIsSignedIn] = useState(false);
+  const [user, setUser] = useState({
+    id: "",
+    name: "",
+    email: "",
+    entries: 0,
+    joined: "",
+  });
+
+  const loadUser = (data) => {
+    setUser({
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      entries: data.entries,
+      joined: data.joined,
+    });
+
+    console.log(user);
+  };
 
   const PAT = "7f8e2cc51dd947f695c5b7c9fe72e725";
   const USER_ID = "yamna";
@@ -81,6 +100,20 @@ function App() {
     )
       .then((response) => response.json())
       .then((result) => {
+        if (result) {
+          fetch("http://localhost:3001/image", {
+            method: "put",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: user.id,
+            }),
+          })
+            .then((response) => response.json())
+            .then((count) => {
+              setUser({ ...user, entries: count });
+            })
+            .catch(console.log);
+        }
         displayFaceBox(calculateFaceLocation(result));
       })
       .catch((error) => console.log("error", error));
@@ -93,28 +126,28 @@ function App() {
       setIsSignedIn(true);
     }
     setRoute(route);
-  }
+  };
 
   return (
     <Main className="App">
-      <Navigation isSignedIn={isSignedIn} onRouteChange={() => onRouteChange("signin")} />
+      <Navigation
+        isSignedIn={isSignedIn}
+        onRouteChange={() => onRouteChange("signin")}
+      />
       {route === "home" ? (
         <>
-          <Rank />
+          <Rank name={user.name} entries={user.entries} />
           <ImageLinkForm
             onInputChange={onInputChange}
             onBtnSubmit={onBtnSubmit}
           />
           <FaceRecognition imageUrl={imageUrl} alt="" box={box} />
         </>
+      ) : route === "signin" ? (
+        <SignIn loadUser={loadUser} onRouteChange={onRouteChange} />
       ) : (
-        route === "signin" ? 
-        <SignIn
-          onRouteChange={onRouteChange}
-        /> : <Register onRouteChange={onRouteChange}/>
-      )
-      
-      }
+        <Register loadUser={loadUser} onRouteChange={onRouteChange} />
+      )}
     </Main>
   );
 }
